@@ -1,3 +1,4 @@
 from hashbuild import *
+from os import path
 
-greet()
+compile_file(f"{path.dirname(__file__)}/test.c", output="test.o")
