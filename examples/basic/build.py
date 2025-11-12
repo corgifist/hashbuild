@@ -1,0 +1,3 @@
+from hashbuild import *
+
+greet()
