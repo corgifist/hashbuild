@@ -3,8 +3,10 @@ from subprocess import Popen
 from os import environ
 from sys import stdout, stdin, stderr
 
-def greet():
-    print("Hello, HashBuild!")
+class ObjectFile:
+    def __init__(self, path, cxx=False):
+        self.path = path
+        self.cxx = cxx
 
 def get_compiler_binary():
     if 'CC' in environ:
@@ -20,15 +22,17 @@ to your desired compiler e.g.:
 ~ python build.py (HashBuild will call gcc directly)
 ```
 """
-def compile_file(input: str, output: str =None) -> str:
+def compile_file(input: str, output: str = None) -> ObjectFile:
     command = []
     command.append(get_compiler_binary())
+    command.append("-c")
     command.append(input)
     command.append("-o")
     command.append(output)
 
     handle = Popen(command, stdout=stdout, stdin=stdin, stderr=stderr)
-    # wait until the compiler finishes
-    while handle.poll() is None:
-        pass
-    return output
+    handle.wait()
+    return ObjectFile(
+        output, 
+        False
+    )
