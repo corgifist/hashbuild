@@ -5,20 +5,26 @@ from pathlib import Path
 from os import path, mkdir
 
 parser = ArgumentParser()
+parser.add_argument('-t', '--target', type=str, required=False, default=None, \
+    help='target to build'
+)
 parser.add_argument('-b', '--build', type=Path, required=False, default='.', \
-    help='a path to the directory where compiled binaries will be stored'
+    help='path to the directory where compiled binaries will be stored'
 )
 parser.add_argument(
     '-c', '--cache', type=Path, required=False, default='.', \
-    help='a path to the directory where HashBuild will create .hashbuild folder'
+    help='path to the directory where HashBuild will create .hashbuild/'
 )
 
 args = parser.parse_args()
 
-def get_build_path():
+def get_target() -> str:
+    return args.target
+
+def get_build_path() -> str:
     return args.build
 
-def get_cache_path():
+def get_cache_path() -> str:
     return args.cache
 
 build = get_build_path()
