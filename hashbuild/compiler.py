@@ -29,7 +29,8 @@ to your desired compiler e.g.:
 ~ python build.py (HashBuild will call gcc directly)
 ```
 """
-def compile_file(input: Path | str, output: str = None, flags: list[str] =[], cxx: bool = False, throw: bool = True) -> ObjectFile:
+def compile_file(input: Path | str, output: str = None, flags: list[str] =[], cxx: bool = False, 
+                 definitions: dict[str, str] = {}, throw: bool = True) -> ObjectFile:
     if type(input) is not str:
         input = str(input)
     if not path.exists(input):
@@ -58,6 +59,8 @@ def compile_file(input: Path | str, output: str = None, flags: list[str] =[], cx
     command.append(input)
     command.append("-o")
     command.append(output)
+    for definition in definitions:
+        command.append(f'-D{definition}={definitions[definition]}')
     for flag in flags:
         command.append(flag)
 

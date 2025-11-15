@@ -2,6 +2,7 @@ from colorama import Fore
 from os import cpu_count, path
 from hashlib import sha1
 from pathlib import Path
+import platform
 
 concurrency = cpu_count()
 
@@ -27,6 +28,15 @@ def read_file(path: str) -> str:
 def write_file(path: str, content: str) -> None:
     with open(path, 'w+') as f:
         f.write(content)
+
+def get_library_name(name: str, library_type: str = 'shared') -> str:
+    os = platform.system()
+    if os == 'Windows':
+        return f'{name}.{"dll" if library_type == "shared" else "a"}'
+    if os == 'Darwin':
+        return f'lib{name}.{"dylib" if library_type == "shared" else "a"}'
+    return f'lib{name}.{"so" if library_type == "shared" else "a"}'
+
 
 """
 notice: extensions must start with dot! (e.g '.py', '.cpp' etc.)
