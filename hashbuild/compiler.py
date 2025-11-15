@@ -12,10 +12,13 @@ class ObjectFile:
         self.fresh = fresh
         self.cxx = cxx
 
-def get_compiler_binary():
+def get_compiler_binary() -> str:
     if 'CC' in environ:
         return environ['CC']
     return "cc"
+
+def get_object_path_stem(input: str) -> str:
+    return f'{get_cache_path()}/.hashbuild/{hash_string(input)}'
 
 """
 By default compile_file uses `cc` to compile files, but
@@ -26,22 +29,27 @@ to your desired compiler e.g.:
 ~ python build.py (HashBuild will call gcc directly)
 ```
 """
-def compile_file(input: str, output: str = None, flags: list[str] =[]) -> ObjectFile:
+def compile_file(input: Path | str, output: str = None, flags: list[str] =[], cxx: bool = False, throw: bool = True) -> ObjectFile:
+    if type(input) is not str:
+        input = str(input)
     if not path.exists(input):
-        raise RuntimeError(f"file '{input}' does not exist")
+        if throw:
+            raise RuntimeError(f"file '{input}' does not exist")
+        return None
     source_code_hash = hash_string(read_file(input) + f"\n{flags}")
-    input_hash = hash_string(input)
-    cache_path = f"{get_cache_path()}/.hashbuild"
-    base_path = f"{cache_path}/{input_hash}"
+    object_stem = None
     if output is None:
-        output = base_path + '.o'
+        object_stem = get_object_path_stem(input)
+        output = object_stem + '.o'
+    else:
+        object_stem = str(path.splitext(output)[0])
     result = ObjectFile(
         input,
         output, 
-        False
+        cxx
     )
     # no need to recompile file
-    if path.exists(base_path + '.compiler_hash') and read_file(base_path + '.compiler_hash') == source_code_hash:
+    if path.exists(object_stem + '.compiler_hash') and read_file(object_stem + '.compiler_hash') == source_code_hash:
         result.fresh = False
         return result
     command = []
@@ -57,6 +65,6 @@ def compile_file(input: str, output: str = None, flags: list[str] =[]) -> Object
     status = handle.wait()
     if status != 0:
         raise RuntimeError(f"failed to compile {input}")
-    write_file(base_path + '.compiler_hash', source_code_hash)
+    write_file(object_stem + '.compiler_hash', source_code_hash)
     result.fresh = True
     return result
